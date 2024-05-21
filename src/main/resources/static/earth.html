@@ -1,64 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Earth Visualization</title>
+    <meta charset="utf-8">
+    <!-- Include the CesiumJS JavaScript and CSS files -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Cesium.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
-        body { margin: 0; }
-        canvas { display: block; }
+        #map {
+            height: calc(100vh - 50px); /* Adjusted height to make space for the menu bar */
+        }
+        #menu {
+            height: 50px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1000; /* Ensure the menu is above the map */
+        }
+        #menu button {
+            background-color: rgba(0, 123, 255, 0.5); /* Semi-transparent button */
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #menu button:hover {
+            background-color: rgba(0, 123, 255, 0.7); /* Darker on hover */
+        }
     </style>
 </head>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
-<script>
-    // 创建场景
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+<div id="cesiumContainer"></div>
+<div id="menu">
+    <button id="fetchThreats">获取威胁</button>
+    <button id="clearThreats">清除所有元素</button>
+    <button id="getZDJ">生成战斗机</button>
+    <button id="drawPath">绘制航线</button>
+</div>
 
-    // 添加地球
-    const geometry = new THREE.SphereGeometry(5, 32, 32);
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('https://raw.githubusercontent.com/astronautweb/earth/main/earthmap1k.jpg');
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    const earth = new THREE.Mesh(geometry, material);
-    scene.add(earth);
 
-    // 添加光源
-    const ambientLight = new THREE.AmbientLight(0x404040); // 环境光
-    scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(10, 10, 10);
-    scene.add(pointLight);
+<script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
 
-    // 设置相机位置
-    camera.position.z = 15;
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlNDI4MzQwNi1jYWVjLTRhYTktYWJhYy1kZTBmY2NlNWE0MDQiLCJpZCI6MjE2NjQ2LCJpYXQiOjE3MTYyNjk4MTh9.gzsZCcDvPCSrmjSLSoK98BGOmfOqQGqDH_SiZyvR2L4';
 
-    // 添加轨道控制
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; // 启用阻尼效果
-    controls.dampingFactor = 0.05;
-
-    // 渲染循环
-    function animate() {
-        requestAnimationFrame(animate);
-        controls.update(); // 需要在渲染循环中更新控制器
-        renderer.render(scene, camera);
-    }
-
-    animate();
-
-    // 处理窗口大小调整
-    window.addEventListener('resize', function () {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+    // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrain: Cesium.Terrain.fromWorldTerrain(),
+        infoBox: false,
+        selectionIndicator: false,
+        shadows: true,
+        shouldAnimate: true,
+        // 添加环境光照
+        scene3DOnly: false,
+        baseLayerPicker: false,
+        // 添加定向光照
+        light: {
+            ambient: new Cesium.Cartesian3(1.0, 1.0, 1.0),
+            diffuse:  new Cesium.Cartesian3(0.5, 0.5, 0.5),
+            direction: new Cesium.Cartesian3(1.0, 1.0, 1.0),
+        },
     });
+
+    // Add Cesium OSM Buildings, a global 3D buildings layer.
+    const buildingTileset = await Cesium.createOsmBuildingsAsync();
+    viewer.scene.primitives.add(buildingTileset);
+    // Fetch threats button click event
+    document.getElementById('fetchThreats').addEventListener('click', function() {
+        // 发送GET请求获取JSON数据
+        axios.get('http://localhost:4399/getThreatens')
+            .then(function(response) {
+                // 请求成功，获取JSON数据
+                const data = response.data;
+                // 遍历每个球体数据，并创建对应的球体实体
+                data.forEach(sphereData => {
+                    const center = Cesium.Cartesian3.fromDegrees(sphereData.center_point.longitude, sphereData.center_point.latitude, sphereData.center_point.height);
+                    const radius = sphereData.r;
+                    const redSphere = viewer.entities.add({
+                        name: "Red sphere with black outline",
+                        position: center,
+                        ellipsoid: {
+                            radii: new Cesium.Cartesian3(radius, radius, radius),
+                            material: Cesium.Color.RED.withAlpha(0.5),
+                            outline: true,
+                            outlineColor: Cesium.Color.BLACK,
+                        },
+                    });
+                });
+            })
+            .catch(function(error) {
+                // 请求失败，处理错误
+                console.error('Error fetching data:', error);
+            });
+    });
+    document.getElementById('clearThreats').addEventListener('click', function() {
+        viewer.entities.removeAll();
+    });
+    //创建3D模型
+    function createModel(url, height) {
+        viewer.entities.removeAll();
+
+        const position = Cesium.Cartesian3.fromDegrees(
+            -123.0744619,
+            44.0503706,
+            height
+        );
+        const heading = Cesium.Math.toRadians(135);
+        const pitch = 0;
+        const roll = 0;
+        const hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+        const orientation = Cesium.Transforms.headingPitchRollQuaternion(
+            position,
+            hpr
+        );
+        // 计算定向光照方向，使其从上向下照射模型
+        const lightDirection = new Cesium.Cartesian3(0.0, 0.0, -1.0); // 光照方向，从上向下
+        const entity = viewer.entities.add({
+            name: url,
+            position: position,
+            orientation: orientation,
+            model: {
+                uri: url,
+                minimumPixelSize: 128,
+                maximumScale: 20000,
+                // 设置模型的材质属性
+                color: Cesium.Color.WHITE, // 设置模型为白色
+                specular: 1.0, // 设置模型的镜面反射率，取值范围为 0.0 到 1.0，1.0 表示完全镜面反射
+                shininess: 30.0, // 设置模型的反光度，值越高越亮
+                // 设置发光材质属性，增加模型的亮度
+                emissive: new Cesium.Color(1.0, 1.0, 1.0, 1.0), // 设置发光颜色为白色
+                emissiveIntensity: 2.0, // 设置发光强度，值越高越亮
+            },
+        });
+        // 设置定向光照的方向属性
+        viewer.scene.light.direction = lightDirection;
+        viewer.trackedEntity = entity;
+    }
+    document.getElementById('getZDJ').addEventListener('click', function() {
+        createModel("http://localhost:4399/model/J20.glb",5000);
+    });
+    document.getElementById('drawPath').addEventListener('click', function() {
+        // 向服务器请求路径信息（假设使用了 axios 库）
+        axios.get('http://localhost:4399/pathInfo')
+            .then(response => {
+                const pathCoordinates = response.data; // 从服务器返回的路径坐标信息
+                // 绘制路径
+                drawPath(pathCoordinates);
+                // 移动模型沿着路径
+                //moveModelAlongPath(pathCoordinates);
+            })
+            .catch(error => {
+                console.error('Error fetching path info:', error);
+            });
+    });
+    // 绘制路径函数
+    function drawPath(coordinates) {
+        const positions = coordinates.map(coord => {
+            return Cesium.Cartesian3.fromDegrees(coord.longitude, coord.latitude, coord.height);
+        });
+
+        viewer.entities.add({
+            polyline: {
+                positions: positions,
+                width: 5,
+                material: Cesium.Color.GREEN
+            }
+        });
+    }
 </script>
+
+</div>
 </body>
 </html>
