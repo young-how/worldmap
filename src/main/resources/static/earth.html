@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Earth Visualization</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
+<script>
+    // 创建场景
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // 添加地球
+    const geometry = new THREE.SphereGeometry(5, 32, 32);
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load('https://raw.githubusercontent.com/astronautweb/earth/main/earthmap1k.jpg');
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const earth = new THREE.Mesh(geometry, material);
+    scene.add(earth);
+
+    // 添加光源
+    const ambientLight = new THREE.AmbientLight(0x404040); // 环境光
+    scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.set(10, 10, 10);
+    scene.add(pointLight);
+
+    // 设置相机位置
+    camera.position.z = 15;
+
+    // 添加轨道控制
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; // 启用阻尼效果
+    controls.dampingFactor = 0.05;
+
+    // 渲染循环
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update(); // 需要在渲染循环中更新控制器
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // 处理窗口大小调整
+    window.addEventListener('resize', function () {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+</body>
+</html>

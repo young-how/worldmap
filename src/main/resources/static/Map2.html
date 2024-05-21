@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map with Circles</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: calc(100vh - 50px); /* Adjusted height to make space for the menu bar */
+        }
+        #menu {
+            height: 50px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1000; /* Ensure the menu is above the map */
+        }
+        #menu button {
+            background-color: rgba(0, 123, 255, 0.5); /* Semi-transparent button */
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #menu button:hover {
+            background-color: rgba(0, 123, 255, 0.7); /* Darker on hover */
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div id="menu">
+    <button id="fetchThreats">获取威胁</button>
+</div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    // Initialize the map
+    var map = L.map('map').setView([23.5, 121], 7); // Centered around Taiwan
+
+    // Add the tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Function to add a circle to the map
+    function addCircle(lat, lng, radius) {
+        L.circle([lat, lng], {
+            color: 'blue',
+            fillColor: 'blue',
+            fillOpacity: 0.5,
+            radius: radius
+        }).addTo(map);
+    }
+
+    // Add default circles around Taiwan
+    //addCircle(23.5, 121, 200000); // Example circle with 50 km radius
+    //addCircle(24.7, 122.2, 100000); // Example circle with 40 km radius
+
+    // Function to fetch and add circles from server
+    function fetchCircles() {
+        axios.get('https://example.com/api/circle-data') // Replace with your server URL
+            .then(response => {
+                const circles = response.data;
+                circles.forEach(circle => {
+                    addCircle(circle.lat, circle.lng, circle.radius);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching circle data:', error);
+            });
+    }
+
+    // Fetch circles from server
+    fetchCircles();
+
+    // Array to hold the latlng points and markers
+    var latlngs = [];
+    var markers = [];
+
+    // Function to add marker and draw line
+    function addMarker(e) {
+        var latlng = e.latlng;
+        latlngs.push(latlng);
+
+        var marker = L.marker(latlng, {
+            draggable: true
+        }).addTo(map);
+
+        marker.on('dblclick', function () {
+            removeMarker(marker);
+        });
+
+        markers.push(marker);
+        redrawPolyline();
+    }
+
+    // Function to remove marker and update line
+    function removeMarker(marker) {
+        var latlng = marker.getLatLng();
+        var index = latlngs.findIndex(function(element) {
+            return element.equals(latlng);
+        });
+
+        if (index !== -1) {
+            latlngs.splice(index, 1);
+            markers.splice(index, 1);
+            map.removeLayer(marker);
+            redrawPolyline();
+        }
+    }
+
+    // Function to redraw the polyline after adding/removing a marker
+    function redrawPolyline() {
+        // Remove all existing polylines
+        map.eachLayer(function(layer) {
+            if (layer instanceof L.Polyline && !layer.options.draggable) {
+                map.removeLayer(layer);
+            }
+        });
+
+        if (latlngs.length > 1) {
+            var polyline = L.polyline(latlngs, { color: 'red' }).addTo(map);
+            map.fitBounds(polyline.getBounds());
+        }
+    }
+
+    // Add double click event to the map to add markers
+    map.on('dblclick', addMarker);
+
+    // Fetch threats button click event
+    document.getElementById('fetchThreats').addEventListener('click', function() {
+        axios.get('http://localhost:4399/getThreatens') // Replace with your server URL
+            .then(response => {
+                const threats = response.data;
+                threats.forEach(threat => {
+                    addCircle(threat.center_point.latitude, threat.center_point.longitude, threat.R * 1000);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching threat data:', error);
+            });
+    });
+</script>
+</body>
+</html>
