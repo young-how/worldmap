@@ -126,7 +126,8 @@
         // 计算定向光照方向，使其从上向下照射模型
         const lightDirection = new Cesium.Cartesian3(0.0, 0.0, -1.0); // 光照方向，从上向下
         const entity = viewer.entities.add({
-            name: url,
+            id: "zdjEntity",  // 显式设置实体的 id
+            name: "zdj",
             position: position,
             orientation: orientation,
             model: {
@@ -144,7 +145,7 @@
         });
         // 设置定向光照的方向属性
         viewer.scene.light.direction = lightDirection;
-        viewer.trackedEntity = entity;
+        //viewer.trackedEntity = entity;
     }
     document.getElementById('getZDJ').addEventListener('click', function() {
         createModel("http://localhost:4399/model/J20.glb",5000);
@@ -157,7 +158,16 @@
                 // 绘制路径
                 drawPath(pathCoordinates);
                 // 移动模型沿着路径
-                //moveModelAlongPath(pathCoordinates);
+                const startCoord = pathCoordinates[0];
+                const position = Cesium.Cartesian3.fromDegrees(startCoord.longitude, startCoord.latitude, startCoord.height);
+                const heading = Cesium.Math.toRadians(135);
+                const pitch = 0;
+                const roll = 0;
+                const hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+                const speed = 100; // 速度 100m/s
+                const orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+                createModel(position, orientation);
+                moveModelAlongPath(pathCoordinates, speed);
             })
             .catch(error => {
                 console.error('Error fetching path info:', error);
@@ -176,6 +186,41 @@
                 material: Cesium.Color.GREEN
             }
         });
+    }
+    // 模型沿着路径移动函数
+    function moveModelAlongPath(pathCoordinates, speed) {
+        let currentIndex = 0;
+        let startTime = Cesium.JulianDate.now();
+
+        function moveModel() {
+            if (currentIndex >= pathCoordinates.length - 1) {
+                return; // 到达路径终点
+            }
+
+            const currentCoord = pathCoordinates[currentIndex];
+            const nextCoord = pathCoordinates[currentIndex + 1];
+
+            const startPosition = Cesium.Cartesian3.fromDegrees(currentCoord.longitude, currentCoord.latitude, 5000);
+            const endPosition = Cesium.Cartesian3.fromDegrees(nextCoord.longitude, nextCoord.latitude, 5000);
+            const distance = Cesium.Cartesian3.distance(startPosition, endPosition);
+
+            const currentTime = Cesium.JulianDate.now();
+            const deltaTime = Cesium.JulianDate.secondsDifference(currentTime, startTime);
+            const moveRatio = (speed * deltaTime) / distance;
+
+            if (moveRatio >= 1.0) {
+                currentIndex++;
+                startTime = currentTime;
+                viewer.entities.getById('zdjEntity').position = endPosition;
+            } else {
+                const newPosition = Cesium.Cartesian3.lerp(startPosition, endPosition, moveRatio, new Cesium.Cartesian3());
+                viewer.entities.getById('zdjEntity').position = newPosition;
+            }
+
+            requestAnimationFrame(moveModel);
+        }
+
+        moveModel();
     }
 </script>
 
