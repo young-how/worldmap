@@ -16,6 +16,10 @@ public class pathController {
     public String getWorldMap(){
         return "earth";
     }
+    @GetMapping("/pathTest")
+    public String getCZMLPath(){
+        return "CZML_Path";
+    }
     @GetMapping("/getThreatens")
     public ResponseEntity<List<threaten>> getThreatens(){
         List<threaten> re=new ArrayList<>();
