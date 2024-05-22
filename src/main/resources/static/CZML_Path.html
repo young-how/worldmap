@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 </head>
 <body>
+<div id="cesiumContainer" class="fullSize"></div>
+<div id="loadingOverlay"><h1>Loading...</h1></div>
+<div id="toolbar"></div>
 
-</body>
-<script>
+<script type="module">
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlNDI4MzQwNi1jYWVjLTRhYTktYWJhYy1kZTBmY2NlNWE0MDQiLCJpZCI6MjE2NjQ2LCJpYXQiOjE3MTYyNjk4MTh9.gzsZCcDvPCSrmjSLSoK98BGOmfOqQGqDH_SiZyvR2L4';
     const czml = [
         {
@@ -7243,4 +7247,6 @@
 
     viewer.trackedEntity = dataSource.entities.getById("path");
 </script>
+</body>
+
 </html>
