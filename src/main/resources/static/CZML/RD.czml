@@ -1,0 +1,24 @@
+{
+    "id": "RD@num@",
+    "name": "Red sphere with black outline",
+    "position": {
+      "cartographicDegrees": [@longitude@, @latitude@, @height@]
+    },
+    "ellipsoid": {
+      "radii": {
+        "cartesian": [@R_@, @R_@, @R_@]
+      },
+      "fill": true,
+      "material": {
+        "solidColor": {
+          "color": {
+            "rgba": [255, 0, 0, 100]
+          }
+        }
+      },
+      "outline": true,
+      "outlineColor": {
+        "rgbaf": [0, 0, 0, 1]
+      }
+    }
+ }

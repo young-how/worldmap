@@ -1,0 +1,58 @@
+[
+  {
+    "id":"document",
+    "version":"1.0"
+  },
+  {
+    "id":"ZDJ",
+    "availability":"2012-08-04T16:00:00Z/2012-08-04T18:04:54.9962195740191Z",
+
+    "model":{
+      "gltf":"../model/J20.glb",
+      "minimumPixelSize":128,
+      "maximumScale":20000
+    },
+    "orientation" : {
+      "velocityReference": "#position"
+    },
+    "viewFrom": {
+      "cartesian": [ -2080, -1715, 1000 ]
+    },
+
+    "path":{
+      "material":{
+          "solidColor":{
+            "color":{
+                "rgba":[
+                  255,255,0,255
+                ]
+              }
+            }
+      },
+      "width":[
+        {
+          "number":5.0
+        }
+      ],
+      "show":[
+        {
+          "interval":"2012-08-04T16:00:00Z/2012-08-04T18:04:54.9962195740191Z",
+          "boolean":true
+        }
+      ]
+    },
+    "position":{
+      "interpolationAlgorithm":"LAGRANGE",
+      "interpolationDegree":1,
+      "epoch":"2012-08-04T16:00:00Z",
+      "cartographicDegrees":[
+        0.0,119.2965,  26.0745,  1000,
+        300.0,119.3036,  25.9948,  1000,
+        600.0,119.3484,   25.8741,  1000,
+        900.0,119.3745,  25.7752,  1000,
+        1200.0,119.4253,  25.6491,  1000,
+        1500.0,121.5654,  25.0330,  1000
+      ]
+    }
+  }
+]

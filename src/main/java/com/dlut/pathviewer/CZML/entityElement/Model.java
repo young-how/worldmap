@@ -1,4 +1,4 @@
-package com.dlut.pathviewer.CZML;
+package com.dlut.pathviewer.CZML.entityElement;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Model {
     private String gltf;  //贴图
-    private double scale; //尺寸
-    private int minimumPixelSize; //最小尺寸
-    private int maximumScale; //最大尺寸
+    private double scale=2.0; //尺寸
+    private int minimumPixelSize=128; //最小尺寸
+    private int maximumScale=20000; //最大尺寸
 }
