@@ -1,0 +1,29 @@
+[
+  {
+    "id": "document",
+    "name": "CZML Colors",
+    "version": "1.0"
+  },
+  {
+    "id": "rgba",
+    "name": "Rectangle with outline using RGBA Colors",
+    "rectangle": {
+      "coordinates": {
+        "wsenDegrees": [@longitude1@, @latitude1@, @longitude2@, @latitude2@]
+      },
+      "fill": true,
+      "material": {
+        "solidColor": {
+          "color": {
+            "rgba": [0, 255, 0, 50]
+          }
+        }
+      },
+      "height": 0,
+      "outline": true,
+      "outlineColor": {
+        "rgba": [0, 0, 0, 255]
+      }
+    }
+  }
+]

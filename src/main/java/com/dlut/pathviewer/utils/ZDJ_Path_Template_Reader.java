@@ -13,7 +13,10 @@ import java.util.List;
 /**
  * @projectName: worldmap
  * @package: com.dlut.pathviewer.utils
- * @className: modelReader
+ * @className: modelReader82
+ *
+ *
+ *
  * @author: younghow
  * @description: TODO
  * @date: 2024/5/23 11:05
@@ -44,13 +47,9 @@ public class ZDJ_Path_Template_Reader extends TemplateReader{
     public static void setModelName(String modelName){
         currentTemplate=currentTemplate.replace("@modelName@",modelName) ;//替换模型名称
     }
-//    public static void setTimeRange(int lastHour,int lastMin,int lastSec){
-//        String timeNow=Interval.getTimeNow();
-//        currentTemplate=currentTemplate.replace("@timeRange@", Interval.getRange(lastHour,lastMin,lastSec)) ;//替换模型名称
-//    }
     public static void setPath(List<Double> path){
         String timeNow=Interval.getTimeNow();
-        currentTemplate=currentTemplate.replace("@ZDJ_Path@", path.toString()) ;//替换模型名称
+
     }
     public static void setStartAndEnd(int lastHour,int lastMin,int lastSec){
         ZonedDateTime currentTime=ZonedDateTime.now();
@@ -58,5 +57,16 @@ public class ZDJ_Path_Template_Reader extends TemplateReader{
         String timeEnd=Interval.getTimeEnd(currentTime,lastHour,lastMin,lastSec);
         currentTemplate=currentTemplate.replace("@StartTime@", timeNow) ;//起始时间
         currentTemplate=currentTemplate.replace("@timeRange@", timeNow+"/"+timeEnd) ;//时间范围
+    }
+    public static String SetZDJPath(String modelName,List<Double> path,int lastHour,int lastMin,int lastSec){
+        String re;
+        ZonedDateTime currentTime=ZonedDateTime.now();
+        String timeNow=Interval.getTime(currentTime);
+        String timeEnd=Interval.getTimeEnd(currentTime,lastHour,lastMin,lastSec);
+        re=currentTemplate.replace("@modelName@",modelName) ;//替换模型名称
+        re=re.replace("@ZDJ_Path@", path.toString()) ;//替换模型名称
+        re=re.replace("@StartTime@", timeNow) ;//起始时间
+        re=re.replace("@timeRange@", timeNow+"/"+timeEnd) ;//时间范围
+        return re;
     }
 }

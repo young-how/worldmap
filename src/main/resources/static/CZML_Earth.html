@@ -35,10 +35,24 @@
         #menu button:hover {
             background-color: rgba(0, 123, 255, 0.7); /* Darker on hover */
         }
+        #infoPanel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 5px;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
 <div id="cesiumContainer"></div>
+<div id="infoPanel">
+    <p>Selected Entity Coordinates:</p>
+    <p id="coordinates">None</p>
+</div>
 <div id="menu">
     <button id="fetchThreats">获取威胁信息</button>
     <button id="getModel">生成战斗机模型</button>
@@ -96,10 +110,6 @@
                 const dataSource = await viewer.dataSources.add(
                     Cesium.CzmlDataSource.load(CZML)
                 );
-                // let dataSourcePromise = Cesium.CzmlDataSource.load(
-                //     "../CZML/model_path.czml"
-                // );
-                // viewer.dataSources.add(dataSourcePromise);
                 viewer.trackedEntity = dataSource.entities.getById("ZDJ");
 
             })
@@ -120,7 +130,52 @@
             .catch(error => {
                 console.error('Error fetching path info:', error);
             });
+        axios.get('http://localhost:4399/CZML_Area')
+            .then(async response_RDs => {
+                const CZML_Area = response_RDs.data; // 从服务器返回CZML字符串
+                console.log(CZML_Area);
+                const dataSource_Area = await viewer.dataSources.add(
+                    Cesium.CzmlDataSource.load(CZML_Area)
+                );
+
+            })
+            .catch(error => {
+                console.error('Error fetching path info:', error);
+            });
     });
+    //entity拖动逻辑
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    var pickedEntity;
+    var dragging = false;
+    var initialPosition;
+    var initialMousePosition;
+
+    handler.setInputAction(function (click) {
+        var pickedObject = viewer.scene.pick(click.position);
+        if (Cesium.defined(pickedObject) ) {
+            pickedEntity = pickedObject.id;
+            initialMousePosition = click.position;
+            initialPosition = Cesium.Cartesian3.clone(pickedEntity.position.getValue(Cesium.JulianDate.now()));
+            dragging = true;
+            viewer.scene.screenSpaceCameraController.enableRotate = false; // Disable camera rotation while dragging
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+
+    handler.setInputAction(function (movement) {
+        if (dragging) {
+            var ray = viewer.camera.getPickRay(movement.endPosition);
+            var cartesian = viewer.scene.globe.pick(ray, viewer.scene);
+            if (cartesian) {
+                pickedEntity.position.setValue(cartesian);
+            }
+        }
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+    handler.setInputAction(function (click) {
+        dragging = false;
+        viewer.scene.screenSpaceCameraController.enableRotate = true; // Re-enable camera rotation after dragging
+    }, Cesium.ScreenSpaceEventType.LEFT_UP);
+
 </script>
 
 </div>
