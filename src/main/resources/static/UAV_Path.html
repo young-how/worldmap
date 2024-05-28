@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <!-- Include the CesiumJS JavaScript and CSS files -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Cesium.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Your custom styles here */
+        #cesiumContainer {
+            position: relative;
+        }
+
+        #infoPanel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            max-height: 200px; /* Maximum height for the scrollable area */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+
+        .sampleButton {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sampleButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+
+<script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    // Replace `your_access_token` with your Cesium ion access token.
+
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlNDI4MzQwNi1jYWVjLTRhYTktYWJhYy1kZTBmY2NlNWE0MDQiLCJpZCI6MjE2NjQ2LCJpYXQiOjE3MTYyNjk4MTh9.gzsZCcDvPCSrmjSLSoK98BGOmfOqQGqDH_SiZyvR2L4';
+    const viewer = new Cesium.Viewer("cesiumContainer", {
+        terrain: Cesium.Terrain.fromWorldTerrain(),
+        baseLayerPicker: false,
+        shouldAnimate: true,
+    });
+    // let dataSource_Area=null;
+    // let dataSource_Path=null;
+    // Function to create buttons in the info panel
+    function createButtons(sampleCount) {
+        const infoPanel = document.createElement('div');
+        infoPanel.id = 'infoPanel';
+        document.getElementById('cesiumContainer').appendChild(infoPanel);
+
+        for (let i = 0; i < sampleCount; i++) {
+            const button = document.createElement('button');
+            button.textContent = `Sample ${i + 1}`;
+            button.classList.add('sampleButton'); // Add custom button class
+            button.onclick = () => {
+                axios.get(`/getPath`, { params: { no: i + 1 } })
+                    .then(async response => {
+                        const CZML = response.data; // 从服务器返回CZML字符串
+                        console.log(CZML);
+                        const dataSource_Path = await viewer.dataSources.add(
+                            Cesium.CzmlDataSource.load(CZML)
+                        );
+                        viewer.trackedEntity = dataSource_Path.entities.getById("ZDJ");
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching path for sample ${i + 1}:`, error);
+                    });
+                axios.get('/getArea', { params: { no: i + 1 } })
+                    .then(async response_RDs => {
+                        const CZML_Area = response_RDs.data; // 从服务器返回CZML字符串
+                        console.log(CZML_Area);
+                        const dataSource_Area = await viewer.dataSources.add(
+                            Cesium.CzmlDataSource.load(CZML_Area)
+                        );
+                    })
+                    .catch(error => {
+                        console.error('Error fetching path info:', error);
+                    });
+            };
+            infoPanel.appendChild(button);
+        }
+    }
+
+    // Fetch sample count from the backend and create buttons
+    axios.get('/getSampleCount')
+        .then(response => {
+            const sampleCount = response.data;
+            createButtons(sampleCount);
+        })
+        .catch(error => {
+            console.error('Error fetching sample count:', error);
+        });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+    "id": "@name@",
+    "name": "Green cylinder with black outline",
+    "position": {
+      "cartographicDegrees": [@longitude@, @latitude@, @height@]
+    },
+    "cylinder": {
+      "length": @length@,
+      "topRadius": @topRadius@,
+      "bottomRadius": @topRadius@,
+      "material": {
+        "solidColor": {
+          "color": {
+            "rgba": [0, 255, 0, 128]
+          }
+        }
+      },
+      "outline": true,
+      "outlineColor": {
+        "rgba": [0, 0, 0, 255]
+      }
+    }
+  }

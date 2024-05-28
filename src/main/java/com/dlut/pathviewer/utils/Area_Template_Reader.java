@@ -9,4 +9,5 @@ public class Area_Template_Reader extends TemplateReader{
         re=re.replace("@latitude2@",String.valueOf(lat2));
         return re;
     }
+
 }

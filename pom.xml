@@ -44,6 +44,45 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
             <version>3.2.5</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.sis.core/sis-referencing -->
+        <dependency>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-referencing</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.sis.core/sis-utility -->
+        <dependency>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-utility</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.sis.core/sis-feature -->
+        <dependency>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-feature</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version> <!-- 版本号可以根据需要进行更改 -->
+        </dependency>
+
+
+
 
 
     </dependencies>

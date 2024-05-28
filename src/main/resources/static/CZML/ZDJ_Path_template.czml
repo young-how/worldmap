@@ -9,7 +9,7 @@
 
     "model":{
       "gltf":"../model/@modelName@",
-      "minimumPixelSize":128,
+      "minimumPixelSize":1,
       "maximumScale":20000
     },
     "orientation" : {

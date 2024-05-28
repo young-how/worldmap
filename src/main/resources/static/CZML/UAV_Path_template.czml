@@ -1,0 +1,51 @@
+[
+  {
+    "id":"document",
+    "version":"1.0"
+  },
+  {
+    "id":"ZDJ",
+    "availability":"@timeRange@",
+
+    "model":{
+      "gltf":"../model/@modelName@",
+      "minimumPixelSize":1,
+      "maximumScale":10
+    },
+    "orientation" : {
+      "velocityReference": "#position"
+    },
+    "viewFrom": {
+      "cartesian": [ -20, -20, 10 ]
+    },
+
+    "path":{
+      "material":{
+          "solidColor":{
+            "color":{
+                "rgba":[
+                  255,255,0,255
+                ]
+              }
+            }
+      },
+      "width":[
+        {
+          "number":5.0
+        }
+      ],
+      "show":[
+        {
+          "interval":"@timeRange@",
+          "boolean":true
+        }
+      ]
+    },
+    "position":{
+      "interpolationAlgorithm":"LAGRANGE",
+      "interpolationDegree":1,
+      "epoch":"@StartTime@",
+      "cartographicDegrees": @ZDJ_Path@
+    }
+  }
+]

@@ -69,4 +69,5 @@ public class ZDJ_Path_Template_Reader extends TemplateReader{
         re=re.replace("@timeRange@", timeNow+"/"+timeEnd) ;//时间范围
         return re;
     }
+
 }
