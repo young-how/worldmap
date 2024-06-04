@@ -1,11 +1,14 @@
 package com.dlut.pathviewer.controller;
 
+
+
 import com.dlut.pathviewer.pojo.PathInfo;
 import com.dlut.pathviewer.service.pathService;
 import com.dlut.pathviewer.utils.Area_Template_Reader;
 import com.dlut.pathviewer.utils.RDTemplateReader;
 import com.dlut.pathviewer.utils.ZDJ_Path_Template_Reader;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.dlut.pathviewer.utils.SmoothPath;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.GeodeticCalculator;
@@ -56,17 +59,22 @@ public class uavController {
         List<List<Double>> path_re=samples.get(no-1).getPath();
         int time=path_re.size();  //路径时长
         double time_count=0;
+//        List<List<Double>> path_smooth=SmoothPath.smoothPath(path_re);
         for(List<Double> p:path_re){
-            double deltaX=p.get(0);
-            double deltaY=p.get(1);
-            path.add(time_count); //加入时间长度
-            double[] newCoordinates = calculateNewCoordinates(originLongitude, originLatitude, deltaX, deltaY);
-            path.add(newCoordinates[0]);
-            path.add(newCoordinates[1]);
-            path.add(p.get(2)+ori_z);
+            if((int)time_count%10==0) {
+                double deltaX = p.get(0);
+                double deltaY = p.get(1);
+                path.add(time_count); //加入时间长度
+                double[] newCoordinates = calculateNewCoordinates(originLongitude, originLatitude, deltaX, deltaY);
+                path.add(newCoordinates[0]);
+                path.add(newCoordinates[1]);
+                path.add(p.get(2) + ori_z);
+            }
+
             time_count=time_count+1;
         }
-        String re=ZDJ_Path_Template_Reader.SetZDJPath("CesiumDrone.glb",path,0,0,time);
+        // 修改无人机模型
+        String re=ZDJ_Path_Template_Reader.SetZDJPath("J20.glb",path,0,0,time);
         return ResponseEntity.ok().body(re);
     }
     @GetMapping("/getArea")
@@ -77,7 +85,8 @@ public class uavController {
             double deltaX=house.getPosition().getX();
             double deltaY=house.getPosition().getY();
             double[] newCoordinates = calculateNewCoordinates(originLongitude, originLatitude, deltaX, deltaY);
-            RDTemplateReader.AddCy(newCoordinates[0],newCoordinates[1],ori_z,house.get_H(),house.get_R());
+            RDTemplateReader.AddRD(newCoordinates[0],newCoordinates[1],ori_z,house.get_R());
+            //RDTemplateReader.AddCy(newCoordinates[0],newCoordinates[1],ori_z,house.get_H(),house.get_R());
         }
         String re=RDTemplateReader.getRDs();
         return ResponseEntity.ok().body(re);

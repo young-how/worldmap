@@ -65,6 +65,17 @@ public class RDTemplateReader extends TemplateReader{
         singleRD_template=text;
         return text;
     }
+//    public static void AddCy(double longitude,double latitude,double height,double length,double R){
+//        //添加单个RD
+//        String rd=cylinder_template;
+//        rd=rd.replace("@name@",String.valueOf(++rd_num));
+//        rd=rd.replace("@longitude@",String.valueOf(longitude));
+//        rd=rd.replace("@latitude@",String.valueOf(latitude));
+//        rd=rd.replace("@height@",String.valueOf(height));
+//        rd=rd.replace("@length@",String.valueOf(length));
+//        rd=rd.replace("@topRadius@",String.valueOf(R));
+//        mids=mids+","+rd;
+//    }
     public static void AddCy(double longitude,double latitude,double height,double length,double R){
         //添加单个RD
         String rd=cylinder_template;
